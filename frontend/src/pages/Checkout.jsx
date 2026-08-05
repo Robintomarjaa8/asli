@@ -11,7 +11,7 @@ const Checkout = () => {
   const { cart, clearCart } = useCart();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('razorpay');
+  const [paymentMethod, setPaymentMethod] = useState('cod');
   const [address, setAddress] = useState({
     label: 'Home',
     street: '',
@@ -32,16 +32,6 @@ const Checkout = () => {
       navigate('/login');
     }
   }, [isAuthenticated, navigate]);
-
-  const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
 
   const handlePlaceOrder = async () => {
     // Validate address
@@ -66,57 +56,9 @@ const Checkout = () => {
         paymentMethod,
       });
 
-      if (paymentMethod === 'razorpay') {
-        // Load Razorpay
-        const loaded = await loadRazorpayScript();
-        if (!loaded) {
-          toast.error('Failed to load payment gateway');
-          return;
-        }
-
-        const options = {
-          key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_XXXXXXXX',
-          amount: Math.round(total * 100),
-          currency: 'INR',
-          name: 'ASLI Shoppe',
-          description: `Order ${data.data.orderNumber}`,
-          order_id: data.razorpayOrderId,
-          handler: async (response) => {
-            try {
-              await api.post('/orders/verify-payment', {
-                razorpayOrderId: response.razorpay_order_id,
-                razorpayPaymentId: response.razorpay_payment_id,
-                razorpaySignature: response.razorpay_signature,
-                orderId: data.data._id,
-              });
-              toast.success('Order placed successfully!');
-              await clearCart();
-              navigate(`/orders/${data.data._id}`);
-            } catch (error) {
-              toast.error('Payment verification failed');
-            }
-          },
-          prefill: {
-            name: user?.name,
-            email: user?.email,
-            contact: address.phone,
-          },
-          theme: {
-            color: '#2563eb',
-          },
-        };
-
-        const razorpay = new window.Razorpay(options);
-        razorpay.on('payment.failed', (response) => {
-          toast.error('Payment failed. Please try again.');
-        });
-        razorpay.open();
-      } else {
-        // COD
-        toast.success('Order placed successfully!');
-        await clearCart();
-        navigate(`/orders/${data.data._id}`);
-      }
+      toast.success('Order placed successfully!');
+      await clearCart();
+      navigate(`/orders/${data.data._id}`);
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to place order');
     } finally {
@@ -207,22 +149,6 @@ const Checkout = () => {
             </h2>
             <div className="space-y-3">
               <label className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                paymentMethod === 'razorpay' ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-dark-700'
-              }`}>
-                <input
-                  type="radio"
-                  name="payment"
-                  value="razorpay"
-                  checked={paymentMethod === 'razorpay'}
-                  onChange={() => setPaymentMethod('razorpay')}
-                  className="accent-primary-600"
-                />
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-gray-100">Razorpay (UPI, Cards, NetBanking)</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Instant secure payment</p>
-                </div>
-              </label>
-              <label className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                 paymentMethod === 'cod' ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-dark-700'
               }`}>
                 <input
@@ -283,7 +209,7 @@ const Checkout = () => {
               disabled={loading}
               className="btn-primary w-full mt-6 py-3"
             >
-              {loading ? 'Placing Order...' : paymentMethod === 'razorpay' ? 'Pay Now' : 'Place Order'}
+              {loading ? 'Placing Order...' : 'Place Order'}
             </button>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
               <FiCheckCircle className="inline mr-1" />

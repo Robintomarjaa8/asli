@@ -1,7 +1,6 @@
 import express from 'express';
 import {
   createOrder,
-  verifyPayment,
   getMyOrders,
   getOrder,
   cancelOrder,
@@ -19,7 +18,6 @@ router.get('/track/:orderNumber', trackOrder);
 
 // Protected - buyer
 router.post('/', protect, createOrder);
-router.post('/verify-payment', protect, verifyPayment);
 router.get('/my-orders', protect, getMyOrders);
 router.put('/:id/cancel', protect, cancelOrder);
 

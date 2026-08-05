@@ -4,24 +4,14 @@ import Cart from '../models/Cart.js';
 import User from '../models/User.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import ErrorResponse from '../utils/errorResponse.js';
-import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import sendEmail from '../utils/sendEmail.js';
-
-// Initialize Razorpay (only if keys are provided)
-const hasRazorpayKeys = process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_ID !== 'rzp_test_XXXXXXXX' && process.env.RAZORPAY_KEY_SECRET;
-const razorpay = hasRazorpayKeys
-  ? new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
-    })
-  : null;
 
 // @desc    Create order
 // @route   POST /api/orders
 // @access  Private
 export const createOrder = asyncHandler(async (req, res, next) => {
-  const { items, shippingAddress, paymentMethod = 'razorpay' } = req.body;
+  const { items, shippingAddress, paymentMethod = 'cod' } = req.body;
 
   if (!items || items.length === 0) {
     return next(new ErrorResponse('No items in order', 400));
@@ -101,21 +91,6 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     estimatedDelivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days
   });
 
-  // If Razorpay payment, create Razorpay order
-  if (paymentMethod === 'razorpay' && razorpay) {
-    const razorpayOrder = await razorpay.orders.create({
-      amount: Math.round(totalPrice * 100), // in paise
-      currency: 'INR',
-      receipt: order.orderNumber,
-      notes: {
-        orderId: order._id.toString(),
-      },
-    });
-
-    order.paymentInfo.razorpayOrderId = razorpayOrder.id;
-    await order.save();
-  }
-
   // Clear cart after order
   await Cart.findOneAndUpdate(
     { user: req.user.id },
@@ -125,93 +100,7 @@ export const createOrder = asyncHandler(async (req, res, next) => {
   res.status(201).json({
     success: true,
     data: order,
-    razorpayOrderId: order.paymentInfo.razorpayOrderId,
   });
-});
-
-// @desc    Verify payment
-// @route   POST /api/orders/verify-payment
-// @access  Private
-export const verifyPayment = asyncHandler(async (req, res, next) => {
-  const { razorpayOrderId, razorpayPaymentId, razorpaySignature, orderId } = req.body;
-
-  const body = razorpayOrderId + '|' + razorpayPaymentId;
-  const expectedSignature = crypto
-    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-    .update(body.toString())
-    .digest('hex');
-
-  const order = await Order.findById(orderId);
-
-  if (!order) {
-    return next(new ErrorResponse('Order not found', 404));
-  }
-
-  if (expectedSignature === razorpaySignature) {
-    // Payment verified
-    order.paymentInfo.razorpayPaymentId = razorpayPaymentId;
-    order.paymentInfo.razorpaySignature = razorpaySignature;
-    order.paymentInfo.status = 'paid';
-    order.paymentInfo.paidAt = Date.now();
-    order.isPaid = true;
-    order.orderStatus = 'processing';
-
-    // Update item statuses
-    order.items.forEach((item) => {
-      item.status = 'processing';
-    });
-
-    await order.save();
-
-    // Update product stock and sales
-    for (const item of order.items) {
-      const product = await Product.findById(item.product);
-      if (product) {
-        product.inventory.stock -= item.quantity;
-        product.inventory.sold += item.quantity;
-        product.quantitySold += item.quantity;
-        product.sales.total += item.price * item.quantity;
-        product.sales.count += item.quantity;
-        await product.save();
-      }
-
-      // Update seller earnings
-      if (item.seller) {
-        const seller = await User.findById(item.seller);
-        if (seller) {
-          seller.sellerProfile.totalSales += item.quantity;
-          seller.sellerProfile.totalEarnings += item.price * item.quantity;
-          await seller.save();
-        }
-      }
-    }
-
-    // Send email notification
-    try {
-      await sendEmail({
-        email: req.user.email,
-        subject: `Order ${order.orderNumber} confirmed!`,
-        message: `Your order ${order.orderNumber} has been placed successfully. Total: ₹${order.totalPrice}`,
-      });
-    } catch (err) {
-      console.log('Email failed:', err);
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'Payment verified successfully',
-      data: order,
-    });
-  } else {
-    order.paymentInfo.status = 'failed';
-    order.orderStatus = 'cancelled';
-    await order.save();
-
-    res.status(400).json({
-      success: false,
-      message: 'Payment verification failed',
-    });
-  }
 });
 
 // @desc    Get user orders

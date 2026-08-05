@@ -15,7 +15,6 @@
     "react-router-dom": "^6.23.1",
     "react-hot-toast": "^2.4.1",
     "react-icons": "^5.2.1",
-    "react-razorpay": "^1.0.0",
     "react-slick": "^0.30.2",
     "slick-carousel": "^1.8.1",
     "recharts": "^2.12.7",

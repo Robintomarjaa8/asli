@@ -27,3 +27,6 @@ node_modules/.vite
 
 # Yarn files
 yarn.lock
+
+# Root package-lock (concurrently dev dependency)
+/package-lock.json

@@ -215,8 +215,8 @@ export const createProduct = asyncHandler(async (req, res, next) => {
   // Parse images from files
   if (req.files && req.files.length > 0) {
     req.body.images = req.files.map((file) => ({
-      url: file.path,
-      public_id: file.filename,
+      url: file.path && file.path.startsWith('http') ? file.path : `/uploads/${file.filename}`,
+      public_id: file.filename || '',
       alt: req.body.name || '',
     }));
   }
@@ -282,8 +282,8 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
   // Handle new images
   if (req.files && req.files.length > 0) {
     const newImages = req.files.map((file) => ({
-      url: file.path,
-      public_id: file.filename,
+      url: file.path && file.path.startsWith('http') ? file.path : `/uploads/${file.filename}`,
+      public_id: file.filename || '',
       alt: req.body.name || '',
     }));
     req.body.images = [...(product.images || []), ...newImages];
@@ -369,8 +369,8 @@ export const uploadProductImages = asyncHandler(async (req, res, next) => {
   }
 
   const images = req.files.map((file) => ({
-    url: file.path,
-    public_id: file.filename,
+    url: file.path && file.path.startsWith('http') ? file.path : `/uploads/${file.filename}`,
+    public_id: file.filename || '',
     alt: req.body.alt || '',
   }));
 

@@ -7,8 +7,12 @@ const connectDB = async () => {
   try {
     let uri = process.env.MONGODB_URI;
 
-    // If no MongoDB URI is provided, use in-memory MongoDB
+    // If no MongoDB URI is provided, use in-memory MongoDB (development only)
     if (!uri) {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('MONGODB_URI is required in production environment!');
+        process.exit(1);
+      }
       console.log('No MONGODB_URI found. Starting in-memory MongoDB...');
       memoryServer = await MongoMemoryServer.create();
       uri = memoryServer.getUri();

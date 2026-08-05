@@ -17,6 +17,14 @@ Complete guide to deploy the ASLI Shoppe Multi-Vendor E-Commerce platform to pro
                         └─────────────────┘
 ```
 
+## Prerequisites
+
+Before deploying, you need accounts for:
+1. **MongoDB Atlas** - Database (free tier available)
+2. **Cloudinary** - Image hosting (free tier available)
+3. **Render** - Backend hosting (free tier available)
+4. **Vercel** - Frontend hosting (free tier available)
+
 ## 1. MongoDB Atlas Setup
 
 1. Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
@@ -44,28 +52,40 @@ Complete guide to deploy the ASLI Shoppe Multi-Vendor E-Commerce platform to pro
    - `CLOUDINARY_API_KEY`
    - `CLOUDINARY_API_SECRET`
 
-## 3. Razorpay Setup
+## 3. Deploy Backend to Render
 
-1. Go to [Razorpay](https://razorpay.com)
-2. Create an account (use test mode for development)
-3. Go to Dashboard → Settings → API Keys
-4. Copy:
-   - `RAZORPAY_KEY_ID`
-   - `RAZORPAY_KEY_SECRET`
+### Option A: Using render.yaml (Recommended)
 
-## 4. Deploy Backend to Render
+The project includes a `backend/render.yaml` file for automated deployment:
 
 1. Go to [Render](https://render.com)
 2. Create a free account
-3. Click "New" → "Web Service"
+3. Click "New" → "Blueprint"
 4. Connect your GitHub repository
-5. Configure:
+5. Render will detect `backend/render.yaml` and create the service
+6. Set the required environment variables (marked as `sync: false`):
+   ```
+   MONGODB_URI=your_mongodb_uri
+   JWT_SECRET=your_strong_jwt_secret
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_api_key
+   CLOUDINARY_API_SECRET=your_api_secret
+   FRONTEND_URL=https://your-frontend.vercel.app
+   ```
+7. Click "Apply" and wait for deployment
+
+### Option B: Manual Setup
+
+1. Go to [Render](https://render.com)
+2. Click "New" → "Web Service"
+3. Connect your GitHub repository
+4. Configure:
    - **Name**: `asli-backend`
    - **Environment**: `Node`
+   - **Root Directory**: `backend`
    - **Build Command**: `npm install`
    - **Start Command**: `npm start`
-   - **Root Directory**: `backend`
-6. Add environment variables:
+5. Add environment variables:
    ```
    NODE_ENV=production
    PORT=5000
@@ -76,27 +96,28 @@ Complete guide to deploy the ASLI Shoppe Multi-Vendor E-Commerce platform to pro
    CLOUDINARY_CLOUD_NAME=your_cloud_name
    CLOUDINARY_API_KEY=your_api_key
    CLOUDINARY_API_SECRET=your_api_secret
-   RAZORPAY_KEY_ID=your_razorpay_key
-   RAZORPAY_KEY_SECRET=your_razorpay_secret
    FRONTEND_URL=https://your-frontend.vercel.app
    ```
-7. Click "Create Web Service"
-8. Wait for deployment to complete
-9. Note your backend URL: `https://asli-backend.onrender.com`
+6. Click "Create Web Service"
+7. Note your backend URL: `https://asli-backend.onrender.com`
 
 ### Seed the Database
-1. After deployment, run the seed script:
-   ```bash
-   # Option 1: Use Render Shell
-   # In the Render dashboard, click "Shell" and run:
-   npm run seed
-   
-   # Option 2: Run locally
-   cd backend
-   MONGODB_URI=your_mongodb_uri npm run seed
-   ```
 
-## 5. Deploy Frontend to Vercel
+After deployment, seed the database with demo data:
+
+```bash
+# Option 1: Use Render Shell
+# In the Render dashboard, click "Shell" and run:
+npm run seed
+
+# Option 2: Run locally
+cd backend
+MONGODB_URI=your_mongodb_uri npm run seed
+```
+
+## 4. Deploy Frontend to Vercel
+
+The project includes a `frontend/vercel.json` file for SPA routing and caching.
 
 1. Go to [Vercel](https://vercel.com)
 2. Create a free account
@@ -110,13 +131,11 @@ Complete guide to deploy the ASLI Shoppe Multi-Vendor E-Commerce platform to pro
 6. Add environment variables:
    ```
    VITE_API_URL=https://asli-backend.onrender.com/api
-   VITE_RAZORPAY_KEY_ID=your_razorpay_key
    ```
 7. Click "Deploy"
-8. Wait for deployment to complete
-9. Your site will be live at: `https://your-project.vercel.app`
+8. Your site will be live at: `https://your-project.vercel.app`
 
-## 6. Update Backend CORS
+## 5. Update Backend CORS
 
 After deploying the frontend, update the backend's `FRONTEND_URL` environment variable to your Vercel URL:
 ```
@@ -125,7 +144,7 @@ FRONTEND_URL=https://your-project.vercel.app
 
 Then redeploy the backend on Render.
 
-## 7. Verify Deployment
+## 6. Verify Deployment
 
 1. Visit your frontend URL
 2. Test the health endpoint:
@@ -137,18 +156,19 @@ Then redeploy the backend on Render.
    - Seller: `seller@asli.com` / `seller123`
    - Buyer: `buyer@asli.com` / `buyer123`
 
-## 8. Production Considerations
+## 7. Production Considerations
 
 ### Security
 - Use strong JWT secret (32+ characters)
 - Enable HTTPS (auto on Vercel & Render)
 - Set up rate limiting (already configured)
 - Use environment variables for all secrets
+- Never commit `.env` files to git
 
 ### Performance
 - Enable MongoDB Atlas indexing
 - Use Cloudinary for image optimization
-- Add caching headers for static assets
+- Add caching headers for static assets (configured in `vercel.json`)
 - Consider using a CDN for images
 
 ### Monitoring
@@ -158,7 +178,7 @@ Then redeploy the backend on Render.
 - Configure Vercel analytics
 
 ### Email Notifications
-- Update SMTP settings in `.env`:
+- Update SMTP settings in environment variables:
   ```
   SMTP_HOST=smtp.gmail.com
   SMTP_PORT=587
@@ -168,12 +188,13 @@ Then redeploy the backend on Render.
 - For Gmail, create an App Password:
   - Google Account → Security → 2-Step Verification → App Passwords
 
-## 9. Troubleshooting
+## 8. Troubleshooting
 
 ### Backend not responding
 - Check Render logs
 - Verify environment variables
 - Check MongoDB connection string
+- Ensure `MONGODB_URI` is set (required in production)
 
 ### Frontend not loading data
 - Check API URL in Vercel environment
@@ -185,12 +206,7 @@ Then redeploy the backend on Render.
 - Check file size limits (10MB max)
 - Check allowed file types
 
-### Payment not working
-- Verify Razorpay keys are correct
-- Test mode keys for development
-- Production keys for live payments
-
-## 10. Cost Estimates
+## 9. Cost Estimates
 
 | Service | Free Tier | Production |
 |---------|-----------|------------|
@@ -198,7 +214,6 @@ Then redeploy the backend on Render.
 | Render | 750 hrs/month | ~$7/mo |
 | Vercel | 100GB bandwidth | ~$20/mo |
 | Cloudinary | 25 credits | ~$89/mo |
-| Razorpay | 0 setup fee | 2% per transaction |
 
 ---
 

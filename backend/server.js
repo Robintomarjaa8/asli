@@ -96,8 +96,10 @@ const startServer = async () => {
   try {
     // Connect to database first
     await connectDB();
-    // Seed demo data if database is empty (await to ensure admin user exists before serving)
-    await seedIfEmpty();
+    // Seed demo data if database is empty (development only)
+    if (process.env.NODE_ENV !== 'production') {
+      await seedIfEmpty();
+    }
 
     const server = app.listen(PORT, () => {
       console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);

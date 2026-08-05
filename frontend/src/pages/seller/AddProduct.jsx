@@ -45,8 +45,11 @@ const AddProduct = () => {
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    const previews = files.map((file) => URL.createObjectURL(file));
-    setImages([...images, ...previews]);
+    const newImages = files.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+    setImages([...images, ...newImages]);
   };
 
   const removeImage = (idx) => {
@@ -78,13 +81,11 @@ const AddProduct = () => {
       formDataObj.append('tags', JSON.stringify(formData.tags.split(',').map((t) => t.trim()).filter(Boolean)));
       formDataObj.append('specifications', JSON.stringify(specifications.filter((s) => s.key && s.value)));
       formDataObj.append('sizeVariants', JSON.stringify(sizeVariants.filter((s) => s.size)));
-      if (images.length > 0) {
-        // Note: Preview URLs can't be uploaded directly. In production use actual File objects.
-        // For demo, we'll use placeholder images
-        images.forEach((img, i) => {
-          formDataObj.append('images', new File([img], `product-${i}.jpg`, { type: 'image/jpeg' }));
-        });
-      }
+
+      // Append actual File objects
+      images.forEach((img) => {
+        formDataObj.append('images', img.file);
+      });
 
       await api.post('/products', formDataObj);
       toast.success('Product added successfully! It will be reviewed by admin.');
@@ -164,7 +165,7 @@ const AddProduct = () => {
           <div className="flex flex-wrap gap-4">
             {images.map((img, idx) => (
               <div key={idx} className="relative">
-                <img src={img} alt={`Product ${idx + 1}`} className="w-24 h-24 object-cover rounded-lg" />
+                <img src={img.preview} alt={`Product ${idx + 1}`} className="w-24 h-24 object-cover rounded-lg" />
                 <button type="button" onClick={() => removeImage(idx)} className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center">
                   <FiX size={14} />
                 </button>

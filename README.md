@@ -9,7 +9,7 @@ A complete, production-ready multi-vendor e-commerce website similar to Amazon/F
 - Browse products with search, filters, sorting & pagination
 - Product details with reviews, ratings & related products
 - Add to cart & wishlist
-- Checkout with Razorpay payment integration
+- Checkout with Cash on Delivery
 - Order tracking & history
 - Download invoices
 - User profile & saved addresses
@@ -44,7 +44,7 @@ A complete, production-ready multi-vendor e-commerce website similar to Amazon/F
 | Authentication | JWT + bcrypt |
 | State Management | Context API |
 | Image Upload | Cloudinary |
-| Payments | Razorpay |
+| Payments | Cash on Delivery |
 | Charts | Recharts |
 | Animations | Framer Motion |
 
@@ -76,9 +76,8 @@ ASLI/
 
 ### Prerequisites
 - Node.js (v18+)
-- MongoDB Atlas account
+- MongoDB Atlas account (for production)
 - Cloudinary account
-- Razorpay account (test mode)
 
 ### 1. Clone the repository
 ```bash
@@ -86,30 +85,42 @@ git clone <your-repo-url>
 cd ASLI
 ```
 
-### 2. Setup Backend
+### 2. Install all dependencies
+```bash
+npm run install:all
+```
+
+### 3. Setup Backend
 ```bash
 cd backend
-npm install
 cp .env.example .env
 # Edit .env with your credentials
-# Run the seeder to create demo data
+# For local dev, leave MONGODB_URI empty to use in-memory MongoDB
+# Run the seeder to create demo data (optional)
 npm run seed
-# Start the backend
-npm run dev
 ```
 
-### 3. Setup Frontend
+### 4. Setup Frontend
 ```bash
 cd frontend
-npm install
 cp .env.example .env
-# Edit .env with your API URL and Razorpay key
-npm run dev
+# Edit .env with your API URL
 ```
 
-### 4. Access the application
+### 5. Run the application
+```bash
+# From the root directory - runs both backend & frontend
+npm run dev
+
+# Or run them separately
+npm run dev:backend
+npm run dev:frontend
+```
+
+### 6. Access the application
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:5000/api
+- Health Check: http://localhost:5000/api/health
 
 ## 🎯 Demo Accounts
 
@@ -140,15 +151,12 @@ JWT_EXPIRE=7d
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
-RAZORPAY_KEY_ID=your_razorpay_key
-RAZORPAY_KEY_SECRET=your_razorpay_secret
 FRONTEND_URL=http://localhost:5173
 ```
 
 ### Frontend (.env)
 ```
 VITE_API_URL=http://localhost:5000/api
-VITE_RAZORPAY_KEY_ID=your_razorpay_key
 ```
 
 ## 📄 API Endpoints
@@ -179,7 +187,6 @@ VITE_RAZORPAY_KEY_ID=your_razorpay_key
 
 ### Orders
 - `POST /api/orders` - Create order
-- `POST /api/orders/verify-payment` - Verify Razorpay payment
 - `GET /api/orders/my-orders` - Get user orders
 - `GET /api/orders/track/:orderNumber` - Track order
 

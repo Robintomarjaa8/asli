@@ -145,7 +145,7 @@ npm run dev:frontend
 ### Backend (.env)
 ```
 PORT=5000
-MONGODB_URI=your_mongodb_uri
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.5eo8odg.mongodb.net/asli-ecommerce
 JWT_SECRET=your_jwt_secret
 JWT_EXPIRE=7d
 CLOUDINARY_CLOUD_NAME=your_cloud_name

@@ -31,9 +31,9 @@ Before deploying, you need accounts for:
 2. Create a free account or login
 3. Create a new cluster (M0 free tier is fine)
 4. Click "Connect" → "Connect your application"
-5. Copy the connection string:
+5. Copy the connection string (example with your cluster):
    ```
-   mongodb+srv://<username>:<password>@cluster.mongodb.net/asli-ecommerce
+   mongodb+srv://<username>:<password>@cluster0.5eo8odg.mongodb.net/asli-ecommerce
    ```
 6. Replace `<username>` and `<password>` with your credentials
 7. Add a database user:

@@ -70,7 +70,7 @@ The project includes a `backend/render.yaml` file for automated deployment:
    CLOUDINARY_CLOUD_NAME=your_cloud_name
    CLOUDINARY_API_KEY=your_api_key
    CLOUDINARY_API_SECRET=your_api_secret
-   FRONTEND_URL=https://your-frontend.vercel.app
+   FRONTEND_URL=https://asli-three.vercel.app
    ```
 7. Click "Apply" and wait for deployment
 
@@ -96,7 +96,7 @@ The project includes a `backend/render.yaml` file for automated deployment:
    CLOUDINARY_CLOUD_NAME=your_cloud_name
    CLOUDINARY_API_KEY=your_api_key
    CLOUDINARY_API_SECRET=your_api_secret
-   FRONTEND_URL=https://your-frontend.vercel.app
+   FRONTEND_URL=https://asli-three.vercel.app
    ```
 6. Click "Create Web Service"
 7. Note your backend URL: `https://asli-backend.onrender.com`
@@ -139,7 +139,7 @@ The project includes a `frontend/vercel.json` file for SPA routing and caching.
 
 After deploying the frontend, update the backend's `FRONTEND_URL` environment variable to your Vercel URL:
 ```
-FRONTEND_URL=https://your-project.vercel.app
+FRONTEND_URL=https://asli-three.vercel.app
 ```
 
 Then redeploy the backend on Render.

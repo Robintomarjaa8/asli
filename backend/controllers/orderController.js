@@ -21,6 +21,11 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Please provide shipping address', 400));
   }
 
+  // Validate shipping address required fields
+  if (!shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zipCode) {
+    return next(new ErrorResponse('Please provide a complete shipping address', 400));
+  }
+
   // Validate items and calculate prices
   let itemsPrice = 0;
   let discount = 0;
@@ -35,11 +40,19 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     }
 
     if (product.status !== 'approved' || !product.isActive) {
-      return next(new ErrorResponse(`${product.name} is not available`, 400));
+      return next(new ErrorResponse(`${product.name} is not available for purchase`, 400));
     }
 
-    if (product.inventory.stock < item.quantity) {
-      return next(new ErrorResponse(`Only ${product.inventory.stock} units of ${product.name} available`, 400));
+    // Guard against NaN/invalid stock values in the database
+    const productStock = Number.isNaN(Number(product.inventory.stock)) ? 0 : Number(product.inventory.stock);
+
+    if (productStock < item.quantity) {
+      return next(
+        new ErrorResponse(
+          `Only ${productStock} units of ${product.name} available. Please update the product stock to continue.`,
+          400
+        )
+      );
     }
 
     const price = product.price;

@@ -67,11 +67,12 @@ const Checkout = () => {
     }
   };
 
-  if (!cart || cart.items.length === 0) {
+  if (!cart || validCartItems.length === 0) {
     return (
       <div className="container-custom py-16 text-center">
         <div className="text-6xl mb-4">🛒</div>
         <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
+        <p className="text-gray-500 dark:text-gray-400 mb-6">Add some products to continue shopping</p>
         <Link to="/shop" className="btn-primary mt-4">Continue Shopping</Link>
       </div>
     );

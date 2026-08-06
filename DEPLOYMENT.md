@@ -99,7 +99,7 @@ The project includes a `backend/render.yaml` file for automated deployment:
    FRONTEND_URL=https://asli-three.vercel.app
    ```
 6. Click "Create Web Service"
-7. Note your backend URL: `https://asli-backend.onrender.com`
+7. Note your backend URL: `https://asli-1.onrender.com`
 
 ### Seed the Database
 
@@ -130,10 +130,10 @@ The project includes a `frontend/vercel.json` file for SPA routing and caching.
    - **Output Directory**: `dist`
 6. Add environment variables:
    ```
-   VITE_API_URL=https://asli-backend.onrender.com/api
+   VITE_API_URL=https://asli-1.onrender.com/api
    ```
 7. Click "Deploy"
-8. Your site will be live at: `https://your-project.vercel.app`
+8. Your site will be live at: `https://asli-three.vercel.app`
 
 ## 5. Update Backend CORS
 
@@ -149,7 +149,7 @@ Then redeploy the backend on Render.
 1. Visit your frontend URL
 2. Test the health endpoint:
    ```
-   https://asli-backend.onrender.com/api/health
+   https://asli-1.onrender.com/api/health
    ```
 3. Login with demo accounts:
    - Admin: `admin@asli.com` / `admin123`

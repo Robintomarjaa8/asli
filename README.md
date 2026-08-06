@@ -156,7 +156,7 @@ FRONTEND_URL=https://asli-three.vercel.app
 
 ### Frontend (.env)
 ```
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=https://asli-1.onrender.com/api
 ```
 
 ## 📄 API Endpoints

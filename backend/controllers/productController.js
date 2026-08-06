@@ -219,6 +219,13 @@ export const createProduct = asyncHandler(async (req, res, next) => {
       public_id: file.filename || '',
       alt: req.body.name || '',
     }));
+  } else if (!req.body.images) {
+    // Use placeholder image if no images uploaded
+    req.body.images = [{
+      url: 'https://via.placeholder.com/500x500?text=No+Image',
+      public_id: '',
+      alt: req.body.name || 'Product image',
+    }];
   }
 
   // Parse JSON strings from form data

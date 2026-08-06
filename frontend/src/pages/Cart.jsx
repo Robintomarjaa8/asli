@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FiTrash2, FiPlus, FiMinus, FiShoppingBag, FiArrowRight } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { getImageUrl } from '../services/api';
 
 const Cart = () => {
   const { isAuthenticated } = useAuth();
@@ -63,7 +64,7 @@ const Cart = () => {
             <div key={item._id} className="card p-4 flex gap-4">
               <Link to={`/product/${item.product._id}`} className="shrink-0">
                 <img
-                  src={item.product.images?.[0]?.url}
+                  src={getImageUrl(item.product.images?.[0]?.url)}
                   alt={item.product.name}
                   className="w-24 h-24 object-cover rounded-lg"
                 />

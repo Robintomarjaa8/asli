@@ -3,6 +3,7 @@ import { FiHeart, FiShoppingCart, FiStar } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
+import { getImageUrl } from '../services/api';
 
 const ProductCard = ({ product }) => {
   const { isAuthenticated } = useAuth();
@@ -11,7 +12,7 @@ const ProductCard = ({ product }) => {
 
   if (!product) return null;
 
-  const image = product.images?.[0]?.url || '';
+  const image = getImageUrl(product.images?.[0]?.url) || '';
   const price = product.price;
   const mrp = product.mrp || price;
   const discount = product.discount || (mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0);

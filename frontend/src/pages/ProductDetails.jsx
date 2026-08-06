@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FiShoppingCart, FiHeart, FiStar, FiCheck, FiTruck, FiShield, FiRefreshCw } from 'react-icons/fi';
-import api from '../services/api';
+import api, { getImageUrl } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ProductCard';
@@ -126,7 +126,7 @@ const ProductDetails = () => {
         <div>
           <div className="card overflow-hidden mb-4">
             <img
-              src={product.images?.[activeImage]?.url || product.images?.[0]?.url}
+              src={getImageUrl(product.images?.[activeImage]?.url || product.images?.[0]?.url)}
               alt={product.name}
               className="w-full aspect-square object-cover"
             />
@@ -141,7 +141,7 @@ const ProductDetails = () => {
                     activeImage === idx ? 'border-primary-600' : 'border-transparent hover:border-gray-300'
                   }`}
                 >
-                  <img src={img.url} alt={img.alt} className="w-full h-full object-cover" />
+                  <img src={getImageUrl(img.url)} alt={img.alt} className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>

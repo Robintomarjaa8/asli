@@ -4,6 +4,23 @@ import Review from '../models/Review.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import ErrorResponse from '../utils/errorResponse.js';
 
+// Helper to build an absolute image URL from an uploaded file
+const buildImageUrl = (file, req) => {
+  // Cloudinary (multer-storage-cloudinary) puts the full http URL in file.path
+  if (file.path && typeof file.path === 'string' && file.path.startsWith('http')) {
+    return file.path;
+  }
+  if (file.url && typeof file.url === 'string' && file.url.startsWith('http')) {
+    return file.url;
+  }
+  // Local disk storage - build absolute URL from the incoming request
+  if (process.env.IMAGE_BASE_URL) {
+    return `${process.env.IMAGE_BASE_URL.replace(/\/$/, '')}/uploads/${file.filename}`;
+  }
+  const baseUrl = `${req.protocol}://${req.get('host')}`;
+  return `${baseUrl}/uploads/${file.filename}`;
+};
+
 // @desc    Get all products
 // @route   GET /api/products
 // @access  Public
@@ -212,15 +229,18 @@ export const getProductBySlug = asyncHandler(async (req, res, next) => {
 export const createProduct = asyncHandler(async (req, res, next) => {
   req.body.seller = req.user.id;
 
-  // Map stock field to inventory.stock
-  if (req.body.stock !== undefined && !req.body.inventory) {
-    req.body.inventory = { stock: Number(req.body.stock) };
+  // Map stock field to inventory.stock (robust - handles empty string and existing inventory)
+  if (req.body.stock !== undefined && req.body.stock !== '') {
+    req.body.inventory = {
+      ...(req.body.inventory || {}),
+      stock: Number(req.body.stock),
+    };
   }
 
   // Parse images from files
   if (req.files && req.files.length > 0) {
     req.body.images = req.files.map((file) => ({
-      url: file.path && file.path.startsWith('http') ? file.path : `/uploads/${file.filename}`,
+      url: buildImageUrl(file, req),
       public_id: file.filename || '',
       alt: req.body.name || '',
     }));
@@ -294,7 +314,7 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
   // Handle new images
   if (req.files && req.files.length > 0) {
     const newImages = req.files.map((file) => ({
-      url: file.path && file.path.startsWith('http') ? file.path : `/uploads/${file.filename}`,
+      url: buildImageUrl(file, req),
       public_id: file.filename || '',
       alt: req.body.name || '',
     }));
@@ -381,7 +401,7 @@ export const uploadProductImages = asyncHandler(async (req, res, next) => {
   }
 
   const images = req.files.map((file) => ({
-    url: file.path && file.path.startsWith('http') ? file.path : `/uploads/${file.filename}`,
+    url: buildImageUrl(file, req),
     public_id: file.filename || '',
     alt: req.body.alt || '',
   }));
@@ -490,9 +510,14 @@ export const updateStock = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Not authorized to update this product', 403));
   }
 
-  product.inventory.stock = req.body.stock ?? product.inventory.stock;
-  if (req.body.lowStockThreshold !== undefined) {
-    product.inventory.lowStockThreshold = req.body.lowStockThreshold;
+  const stock = Number(req.body.stock);
+  if (req.body.stock === undefined || req.body.stock === '' || Number.isNaN(stock) || stock < 0) {
+    return next(new ErrorResponse('Please provide a valid stock quantity', 400));
+  }
+
+  product.inventory.stock = stock;
+  if (req.body.lowStockThreshold !== undefined && req.body.lowStockThreshold !== '') {
+    product.inventory.lowStockThreshold = Number(req.body.lowStockThreshold);
   }
 
   await product.save();

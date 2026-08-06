@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FiMapPin, FiCreditCard, FiCheckCircle } from 'react-icons/fi';
-import api from '../services/api';
+import api, { getImageUrl } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import toast from 'react-hot-toast';
@@ -175,7 +175,7 @@ const Checkout = () => {
             <div className="space-y-3 max-h-60 overflow-y-auto mb-4">
               {cart.items.map((item) => (
                 <div key={item._id} className="flex items-center gap-3">
-                  <img src={item.product.images?.[0]?.url} alt={item.product.name} className="w-14 h-14 object-cover rounded-lg" />
+                  <img src={getImageUrl(item.product.images?.[0]?.url)} alt={item.product.name} className="w-14 h-14 object-cover rounded-lg" />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1">{item.product.name}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">Qty: {item.quantity}</p>

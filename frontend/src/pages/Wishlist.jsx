@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { FiHeart, FiTrash2, FiShoppingCart } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { getImageUrl } from '../services/api';
 
 const Wishlist = () => {
   const { isAuthenticated } = useAuth();
@@ -39,7 +40,7 @@ const Wishlist = () => {
           return (
             <div key={item._id} className="card p-4 hover:shadow-card-hover transition-shadow">
               <Link to={`/product/${product._id}`} className="block">
-                <img src={product.images?.[0]?.url} alt={product.name} className="w-full aspect-square object-cover rounded-lg mb-3" />
+                <img src={getImageUrl(product.images?.[0]?.url)} alt={product.name} className="w-full aspect-square object-cover rounded-lg mb-3" />
                 <p className="text-sm text-gray-500 mb-1">{product.brand}</p>
                 <h3 className="font-medium text-gray-900 dark:text-gray-100 text-sm line-clamp-2 mb-2">{product.name}</h3>
                 <div className="flex items-center gap-2 mb-3">

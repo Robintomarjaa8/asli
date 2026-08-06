@@ -9,6 +9,20 @@ const api = axios.create({
   },
 });
 
+// Resolve a possibly-relative image URL against the backend origin.
+// Cloudinary URLs (http/https/data) are returned as-is.
+// Relative paths like "/uploads/foo.jpg" are prefixed with the API base URL origin.
+export const getImageUrl = (url) => {
+  if (!url) return '';
+  if (/^(https?:|data:|blob:)/i.test(url)) return url;
+  try {
+    const base = new URL(API_URL);
+    return base.origin + (url.startsWith('/') ? url : `/${url}`);
+  } catch {
+    return url;
+  }
+};
+
 // Add token to requests
 api.interceptors.request.use(
   (config) => {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiPlus, FiEdit2, FiTrash2, FiPackage } from 'react-icons/fi';
-import api from '../../services/api';
+import api, { getImageUrl } from '../../services/api';
 import toast from 'react-hot-toast';
 
 const SellerProducts = () => {
@@ -79,7 +79,7 @@ const SellerProducts = () => {
                   <tr key={product._id} className="hover:bg-gray-50 dark:hover:bg-dark-800">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <img src={product.images?.[0]?.url} alt={product.name} className="w-12 h-12 object-cover rounded-lg" />
+                        <img src={getImageUrl(product.images?.[0]?.url)} alt={product.name} className="w-12 h-12 object-cover rounded-lg" />
                         <div>
                           <p className="font-medium text-gray-900 dark:text-gray-100 text-sm line-clamp-1">{product.name}</p>
                           <p className="text-xs text-gray-500 dark:text-gray-400">SKU: {product.sku}</p>

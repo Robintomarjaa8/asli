@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FiPackage, FiCheck, FiX, FiStar } from 'react-icons/fi';
-import api from '../../services/api';
+import api, { getImageUrl } from '../../services/api';
 import toast from 'react-hot-toast';
 
 const AdminProducts = () => {
@@ -87,7 +87,7 @@ const AdminProducts = () => {
                   <tr key={product._id} className="hover:bg-gray-50 dark:hover:bg-dark-800">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <img src={product.images?.[0]?.url} alt={product.name} className="w-10 h-10 object-cover rounded-lg" />
+                        <img src={getImageUrl(product.images?.[0]?.url)} alt={product.name} className="w-10 h-10 object-cover rounded-lg" />
                         <span className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1">{product.name}</span>
                       </div>
                     </td>

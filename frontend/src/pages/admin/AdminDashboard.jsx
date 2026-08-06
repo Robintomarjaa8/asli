@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiUsers, FiShoppingBag, FiPackage, FiDollarSign, FiTruck, FiStar, FiArrowRight } from 'react-icons/fi';
-import api from '../../services/api';
+import api, { getImageUrl } from '../../services/api';
 
 const AdminDashboard = () => {
   const [data, setData] = useState(null);
@@ -111,7 +111,7 @@ const AdminDashboard = () => {
             <div className="space-y-3">
               {data?.topProducts?.map((product) => (
                 <div key={product._id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-dark-800 rounded-lg">
-                  <img src={product.images?.[0]?.url} alt={product.name} className="w-12 h-12 object-cover rounded-lg" />
+                  <img src={getImageUrl(product.images?.[0]?.url)} alt={product.name} className="w-12 h-12 object-cover rounded-lg" />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1">{product.name}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">{product.quantitySold} sold</p>

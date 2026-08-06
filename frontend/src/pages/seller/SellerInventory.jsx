@@ -1,17 +1,24 @@
 import { useState, useEffect } from 'react';
 import { FiBox } from 'react-icons/fi';
-import api from '../../services/api';
+import api, { getImageUrl } from '../../services/api';
 import toast from 'react-hot-toast';
 
 const SellerInventory = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [stockInputs, setStockInputs] = useState({});
 
   useEffect(() => {
     const fetchInventory = async () => {
       try {
         const { data } = await api.get('/seller/inventory');
         setProducts(data.data);
+        // Initialize local stock inputs
+        const initial = {};
+        data.data.forEach((p) => {
+          initial[p._id] = p.inventory.stock;
+        });
+        setStockInputs(initial);
       } catch (error) {
         console.error('Error fetching inventory:', error);
       } finally {
@@ -21,14 +28,39 @@ const SellerInventory = () => {
     fetchInventory();
   }, []);
 
-  const updateStock = async (id, stock) => {
+  const handleStockChange = (id, value) => {
+    setStockInputs((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const commitStock = async (product) => {
+    const value = Number(stockInputs[product._id]);
+    if (Number.isNaN(value) || value < 0) {
+      toast.error('Please enter a valid stock quantity');
+      // Reset to current value
+      setStockInputs((prev) => ({ ...prev, [product._id]: product.inventory.stock }));
+      return;
+    }
+    if (value === product.inventory.stock) return;
+
     try {
-      await api.put(`/products/${id}/stock`, { stock });
+      await api.put(`/products/${product._id}/stock`, { stock: value });
       toast.success('Stock updated');
       const { data } = await api.get('/seller/inventory');
       setProducts(data.data);
+      const updated = {};
+      data.data.forEach((p) => {
+        updated[p._id] = p.inventory.stock;
+      });
+      setStockInputs(updated);
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to update stock');
+      setStockInputs((prev) => ({ ...prev, [product._id]: product.inventory.stock }));
+    }
+  };
+
+  const handleKeyDown = (e, product) => {
+    if (e.key === 'Enter') {
+      e.target.blur();
     }
   };
 
@@ -61,7 +93,7 @@ const SellerInventory = () => {
                   <tr key={product._id} className="hover:bg-gray-50 dark:hover:bg-dark-800">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <img src={product.images?.[0]?.url} alt={product.name} className="w-10 h-10 object-cover rounded-lg" />
+                        <img src={getImageUrl(product.images?.[0]?.url)} alt={product.name} className="w-10 h-10 object-cover rounded-lg" />
                         <span className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1">{product.name}</span>
                       </div>
                     </td>
@@ -69,8 +101,11 @@ const SellerInventory = () => {
                     <td className="px-6 py-4">
                       <input
                         type="number"
-                        value={product.inventory.stock}
-                        onChange={(e) => updateStock(product._id, parseInt(e.target.value))}
+                        min="0"
+                        value={stockInputs[product._id] ?? product.inventory.stock}
+                        onChange={(e) => handleStockChange(product._id, e.target.value)}
+                        onBlur={() => commitStock(product)}
+                        onKeyDown={(e) => handleKeyDown(e, product)}
                         className="input w-20 text-sm py-1"
                       />
                     </td>

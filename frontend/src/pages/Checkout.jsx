@@ -22,7 +22,8 @@ const Checkout = () => {
     phone: user?.phone || '',
   });
 
-  const subtotal = cart?.items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
+  const validCartItems = (cart?.items || []).filter((item) => item.product);
+  const subtotal = validCartItems.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
   const shipping = subtotal >= 999 ? 0 : 49;
   const tax = Math.round(subtotal * 0.05);
   const total = subtotal + shipping + tax;
@@ -42,7 +43,7 @@ const Checkout = () => {
 
     setLoading(true);
     try {
-      const items = cart.items.map((item) => ({
+      const items = validCartItems.map((item) => ({
         product: item.product._id,
         quantity: item.quantity,
         size: item.size || '',
@@ -173,7 +174,7 @@ const Checkout = () => {
           <div className="card p-6 sticky top-24">
             <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Order Summary</h2>
             <div className="space-y-3 max-h-60 overflow-y-auto mb-4">
-              {cart.items.map((item) => (
+              {validCartItems.map((item) => (
                 <div key={item._id} className="flex items-center gap-3">
                   <img src={getImageUrl(item.product.images?.[0]?.url)} alt={item.product.name} className="w-14 h-14 object-cover rounded-lg" />
                   <div className="flex-1">

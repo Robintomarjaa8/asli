@@ -3,15 +3,37 @@ import Product from '../models/Product.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import ErrorResponse from '../utils/errorResponse.js';
 
+// Populate cart items and remove any stale items whose product no longer exists.
+// Returns the cleaned, populated cart (removing the stale items from the DB too).
+const getPopulatedCart = async (userId) => {
+  let cart = await Cart.findOne({ user: userId }).populate(
+    'items.product',
+    'name price mrp images inventory brand seller'
+  );
+
+  if (!cart) {
+    cart = await Cart.create({ user: userId, items: [] });
+  }
+
+  // Remove items whose linked product is missing (deleted)
+  const validItems = cart.items.filter((item) => item.product);
+  if (validItems.length !== cart.items.length) {
+    cart.items = validItems;
+    await cart.save();
+    cart = await Cart.findById(cart._id).populate(
+      'items.product',
+      'name price mrp images inventory brand seller'
+    );
+  }
+
+  return cart;
+};
+
 // @desc    Get user cart
 // @route   GET /api/cart
 // @access  Private
 export const getCart = asyncHandler(async (req, res, next) => {
-  let cart = await Cart.findOne({ user: req.user.id }).populate('items.product', 'name price mrp images inventory brand seller');
-
-  if (!cart) {
-    cart = await Cart.create({ user: req.user.id, items: [] });
-  }
+  const cart = await getPopulatedCart(req.user.id);
 
   res.status(200).json({
     success: true,
@@ -71,7 +93,7 @@ export const addToCart = asyncHandler(async (req, res, next) => {
 
   await cart.save();
 
-  const populatedCart = await Cart.findById(cart._id).populate('items.product', 'name price mrp images inventory brand seller');
+  const populatedCart = await getPopulatedCart(req.user.id);
 
   res.status(200).json({
     success: true,
@@ -111,7 +133,7 @@ export const updateCartItem = asyncHandler(async (req, res, next) => {
   cart.items[itemIndex].quantity = quantity;
   await cart.save();
 
-  const populatedCart = await Cart.findById(cart._id).populate('items.product', 'name price mrp images inventory brand seller');
+  const populatedCart = await getPopulatedCart(req.user.id);
 
   res.status(200).json({
     success: true,
@@ -135,7 +157,7 @@ export const removeFromCart = asyncHandler(async (req, res, next) => {
 
   await cart.save();
 
-  const populatedCart = await Cart.findById(cart._id).populate('items.product', 'name price mrp images inventory brand seller');
+  const populatedCart = await getPopulatedCart(req.user.id);
 
   res.status(200).json({
     success: true,

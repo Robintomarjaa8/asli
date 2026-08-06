@@ -49,7 +49,8 @@ const Cart = () => {
     );
   }
 
-  const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const validCartItems = cart.items.filter((item) => item.product);
+  const subtotal = validCartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shipping = subtotal >= 999 ? 0 : 49;
   const total = subtotal + shipping;
 
@@ -60,7 +61,7 @@ const Cart = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Cart items */}
         <div className="lg:col-span-2 space-y-4">
-          {cart.items.map((item) => (
+          {validCartItems.map((item) => (
             <div key={item._id} className="card p-4 flex gap-4">
               <Link to={`/product/${item.product._id}`} className="shrink-0">
                 <img

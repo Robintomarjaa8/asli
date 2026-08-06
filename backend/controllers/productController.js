@@ -222,7 +222,7 @@ export const createProduct = asyncHandler(async (req, res, next) => {
   } else if (!req.body.images) {
     // Use placeholder image if no images uploaded
     req.body.images = [{
-      url: 'https://via.placeholder.com/500x500?text=No+Image',
+      url: 'https://placehold.co/500x500/png?text=No+Image',
       public_id: '',
       alt: req.body.name || 'Product image',
     }];

@@ -19,7 +19,7 @@ const orderSchema = new mongoose.Schema(
           required: true,
         },
         name: { type: String, required: true },
-        image: { type: String, required: true },
+        image: { type: String, default: 'https://placehold.co/500x500/png?text=No+Image' },
         price: { type: Number, required: true },
         mrp: { type: Number, default: 0 },
         quantity: { type: Number, required: true, min: 1 },

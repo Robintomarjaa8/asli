@@ -64,7 +64,7 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     validItems.push({
       product: product._id,
       name: product.name,
-      image: product.images[0]?.url || '',
+      image: product.images[0]?.url || 'https://placehold.co/500x500/png?text=No+Image',
       price,
       mrp,
       quantity: item.quantity,

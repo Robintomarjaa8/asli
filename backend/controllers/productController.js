@@ -212,6 +212,11 @@ export const getProductBySlug = asyncHandler(async (req, res, next) => {
 export const createProduct = asyncHandler(async (req, res, next) => {
   req.body.seller = req.user.id;
 
+  // Map stock field to inventory.stock
+  if (req.body.stock !== undefined && !req.body.inventory) {
+    req.body.inventory = { stock: Number(req.body.stock) };
+  }
+
   // Parse images from files
   if (req.files && req.files.length > 0) {
     req.body.images = req.files.map((file) => ({
